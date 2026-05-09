@@ -23,9 +23,10 @@ module "lighthouse" {
   namespace    = "status-harbor"
   token        = statusharbor_lighthouse.prod.token
 
-  # Scope discovery to specific namespaces (downgrades RBAC from
-  # ClusterRole to per-namespace Roles).
-  discovery_namespaces = ["prod", "staging"]
+  # All-namespaces discovery (default). Pass a named list like
+  # ["prod", "staging"] to scope and downgrade RBAC from
+  # cluster-scoped to per-namespace Roles.
+  discovery_namespaces = ["*"]
 }
 ```
 

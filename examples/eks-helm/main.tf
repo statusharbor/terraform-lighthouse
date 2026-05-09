@@ -27,7 +27,7 @@ module "lighthouse" {
   release_name         = "lighthouse"
   namespace            = "status-harbor"
   token                = statusharbor_lighthouse.prod.token
-  discovery_namespaces = ["prod", "staging"]
+  discovery_namespaces = ["*"]
 }
 
 variable "statusharbor_api_token" {
