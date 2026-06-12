@@ -73,6 +73,49 @@ resource "helm_release" "lighthouse" {
   }
 
   dynamic "set" {
+    for_each = var.daemonset_enabled ? [1] : []
+    content {
+      name  = "daemonset.enabled"
+      value = "true"
+    }
+  }
+
+  # Bind-mount host's / read-only into the DaemonSet so the disk
+  # collector statfs()es real host filesystems. Gated on daemonset_enabled
+  # because mountHostRoot is meaningless without the DaemonSet — but
+  # always sent (both true AND false) when the DaemonSet is on, so the
+  # operator's explicit choice in this module overrides any future drift
+  # in the chart's default. Without that, a chart upgrade that flipped
+  # the default would silently change this module's behaviour.
+  dynamic "set" {
+    for_each = var.daemonset_enabled ? [1] : []
+    content {
+      name  = "daemonset.mountHostRoot"
+      value = var.daemonset_mount_host_root ? "true" : "false"
+    }
+  }
+
+  # Helm's slice setter form for the DaemonSet extraEnv list — each
+  # entry becomes two `--set` flags (name + value) addressed via the
+  # array-index path. The chart's daemonset.yaml template walks
+  # .Values.daemonset.extraEnv with `toYaml` so the final container
+  # spec receives one env entry per object.
+  dynamic "set" {
+    for_each = var.daemonset_extra_env
+    content {
+      name  = "daemonset.extraEnv[${set.key}].name"
+      value = set.value.name
+    }
+  }
+  dynamic "set" {
+    for_each = var.daemonset_extra_env
+    content {
+      name  = "daemonset.extraEnv[${set.key}].value"
+      value = set.value.value
+    }
+  }
+
+  dynamic "set" {
     for_each = var.extra_values
     content {
       name  = set.key
