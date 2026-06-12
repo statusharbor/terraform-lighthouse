@@ -46,10 +46,16 @@ variable "discovery_namespaces" {
   default     = ["*"]
 }
 
-variable "daemonset_enabled" {
-  description = "Enable the per-node DaemonSet workload (LIGHTHOUSE_ROLE=host_metrics, /host/proc hostPath mount). Off by default to match the chart so `terraform apply` is a no-op for installs that don't want per-node metrics. Note: the DaemonSet's hostPath /proc mount is forbidden under the `restricted` Pod Security Admission profile — label the namespace `baseline` or `privileged`, or pass a custom `daemonset.containerSecurityContext` via `extra_values`."
+variable "k8sstats_enabled" {
+  description = "Install the ClusterRole + ClusterRoleBinding the agent's cluster-shape collector needs (nodes / pods / pvc list + nodes/proxy for kubelet /stats/summary). The k8sstats collector starts unconditionally inside the agent when running in Kubernetes; without this RBAC it just logs 403 every tick and the console's `/metrics → Cluster` tab stays empty. On by default because the whole point of running Lighthouse on Kubernetes is to see what the cluster does — flip to false only when the cluster operator deliberately wants to opt out of cluster-scoped RBAC."
   type        = bool
-  default     = false
+  default     = true
+}
+
+variable "daemonset_enabled" {
+  description = "Enable the per-node DaemonSet workload (LIGHTHOUSE_ROLE=host_metrics, /host/proc hostPath mount). On by default for the same reason as k8sstats — without the DaemonSet the central pod reads host metrics through its containerised /proc, so CPU / memory get cgroup-skewed and the disk panel shows the pod's pseudo-mounts (/etc/hosts, emptyDirs) instead of node filesystems. Flip to false on clusters where the DaemonSet's hostPath /proc mount is forbidden by Pod Security Admission `restricted` (label the namespace `baseline` or `privileged`, or pass a custom `daemonset.containerSecurityContext` via `extra_values` instead)."
+  type        = bool
+  default     = true
 }
 
 variable "daemonset_mount_host_root" {

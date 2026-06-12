@@ -72,12 +72,18 @@ resource "helm_release" "lighthouse" {
     }
   }
 
-  dynamic "set" {
-    for_each = var.daemonset_enabled ? [1] : []
-    content {
-      name  = "daemonset.enabled"
-      value = "true"
-    }
+  # Always send both daemonset.enabled and k8sstats.enabled (true OR
+  # false) so the operator's choice in this module overrides any future
+  # drift in the chart's defaults. Without that, a chart upgrade that
+  # flipped a default would silently change this module's behaviour.
+  set {
+    name  = "k8sstats.enabled"
+    value = var.k8sstats_enabled ? "true" : "false"
+  }
+
+  set {
+    name  = "daemonset.enabled"
+    value = var.daemonset_enabled ? "true" : "false"
   }
 
   # Bind-mount host's / read-only into the DaemonSet so the disk

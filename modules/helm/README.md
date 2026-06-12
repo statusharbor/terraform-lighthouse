@@ -42,7 +42,8 @@ module "lighthouse" {
 | `image_tag`            | string         | chart's appVersion   | Override the agent image tag.                        |
 | `discovery_enabled`    | bool           | `true`               | Enable Ingress + Service auto-discovery.             |
 | `discovery_namespaces` | list(string)   | `["*"]`              | Namespaces to watch (`*` = cluster-scoped RBAC).     |
-| `daemonset_enabled`    | bool           | `false`              | Install the per-node host-metrics DaemonSet. See PSA caveat below. |
+| `k8sstats_enabled`     | bool           | `true`               | Install the ClusterRole/Binding the agent's cluster-shape collector needs (nodes / pods / pvc list + nodes/proxy). Without it the collector logs 403 every tick and the console `/metrics → Cluster` tab is empty. Set `false` only when the cluster operator deliberately wants to opt out of cluster-scoped RBAC. |
+| `daemonset_enabled`    | bool           | `true`               | Install the per-node host-metrics DaemonSet. Without it the central pod reads cgroup-virtualised /proc — CPU/Mem skewed to the pod, disk panel shows container pseudo-mounts. Set `false` on clusters where `hostPath: /proc` is forbidden by PSA `restricted` (see PSA caveat below). |
 | `daemonset_mount_host_root` | bool      | `true`               | Bind-mount the node's `/` read-only at `/host/root` so disk metrics reflect the node, not the container. Linux nodes only. Set `false` on clusters whose PSA / admission policies forbid `hostPath: /`. Only meaningful when `daemonset_enabled = true`. See host-metrics section below. |
 | `daemonset_extra_env`  | list(object{name,value}) | `[]`      | Extra env vars for the DaemonSet pods (proxies, etc.). |
 | `extra_values`         | map(string)    | `{}`                 | Flat dotted-path map for any additional chart values.|
