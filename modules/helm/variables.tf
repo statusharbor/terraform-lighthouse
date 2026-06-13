@@ -35,7 +35,7 @@ variable "image_tag" {
 }
 
 variable "discovery_enabled" {
-  description = "Enable Kubernetes Ingress + Service auto-discovery. Default in the chart is also true."
+  description = "Enable Kubernetes Ingress, Service and Gateway API HTTPRoute auto-discovery. HTTPRoute is best-effort: the agent self-disables it on clusters where the Gateway API CRDs are not installed. Default in the chart is also true."
   type        = bool
   default     = true
 }

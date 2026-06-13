@@ -40,7 +40,7 @@ module "lighthouse" {
 | `create_namespace`     | bool           | `true`               | Create the namespace if missing.                     |
 | `chart_version`        | string         | latest               | Pin a specific chart version.                        |
 | `image_tag`            | string         | chart's appVersion   | Override the agent image tag.                        |
-| `discovery_enabled`    | bool           | `true`               | Enable Ingress + Service auto-discovery.             |
+| `discovery_enabled`    | bool           | `true`               | Enable Ingress, Service and Gateway API HTTPRoute auto-discovery. HTTPRoute self-disables when the Gateway API CRDs are absent. |
 | `discovery_namespaces` | list(string)   | `["*"]`              | Namespaces to watch (`*` = cluster-scoped RBAC).     |
 | `k8sstats_enabled`     | bool           | `true`               | Install the ClusterRole/Binding the agent's cluster-shape collector needs (nodes / pods / pvc list + nodes/proxy). Without it the collector logs 403 every tick and the console `/metrics → Cluster` tab is empty. Set `false` only when the cluster operator deliberately wants to opt out of cluster-scoped RBAC. |
 | `daemonset_enabled`    | bool           | `true`               | Install the per-node host-metrics DaemonSet. Without it the central pod reads cgroup-virtualised /proc — CPU/Mem skewed to the pod, disk panel shows container pseudo-mounts. Set `false` on clusters where `hostPath: /proc` is forbidden by PSA `restricted` (see PSA caveat below). |
